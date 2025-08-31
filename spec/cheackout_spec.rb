@@ -6,15 +6,13 @@ RSpec.describe Checkout do
   describe "#initialize" do
 
     it "accepts pricing rules" do
-      pricing_rules = []
-      checkout = Checkout.new(pricing_rules: pricing_rules)
+      checkout = create(:checkout)
 
       expect(checkout).to be_a(Checkout)
     end
 
     it "has an initial total of 0" do
-      pricing_rules = []
-      checkout = Checkout.new(pricing_rules: pricing_rules)
+      checkout =  create(:checkout)
 
       expect(checkout.total).to eq(0)
     end
@@ -22,8 +20,7 @@ RSpec.describe Checkout do
   end
 
   describe "#scan" do
-    let(:pricing_rules) { [] }
-    let(:checkout) { Checkout.new(pricing_rules: pricing_rules) }
+    let(:checkout) {  create(:checkout) }
     let(:green_tea) { create(:product) }
     let(:strawberries) { create(:product, code: 'SR1', name: 'Strawberries', price: 5.00) }
 
@@ -61,8 +58,7 @@ RSpec.describe Checkout do
   end
 
   describe "integration" do
-    let(:pricing_rules) { [] }
-    let(:checkout) { Checkout.new(pricing_rules: pricing_rules) }
+    let(:checkout) { create(:checkout)}
     let(:green_tea) { create(:product) }
     let(:strawberries) { create(:product, code: 'SR1', name: 'Strawberries', price: 5.00) }
     let(:coffee) { create(:product, code: 'CF1', name: 'Coffee', price: 11.23) }
@@ -100,7 +96,7 @@ RSpec.describe Checkout do
     let(:green_tea) { create(:product) }
     let(:strawberries) { create(:product, code: 'SR1', name: 'Strawberries', price: 5.00) }
     let(:catalog) { create(:product_catalog, products: [green_tea, strawberries]) }
-    let(:checkout) { Checkout.new(pricing_rules: [], catalog: catalog) }
+    let(:checkout) { create(:checkout, catalog: catalog) }
 
     context 'scanning with product codes' do
       it 'scans product by code using catalog' do
@@ -131,7 +127,7 @@ RSpec.describe Checkout do
     end
 
     context 'without catalog' do
-      let(:checkout_no_catalog) { Checkout.new(pricing_rules: []) }
+      let(:checkout_no_catalog) { create(:checkout) }
 
       it 'scans product objects directly' do
         checkout_no_catalog.scan(green_tea)
