@@ -9,18 +9,18 @@ RSpec.describe ProductCatalog do
 
   describe '#initialize' do
     it 'creates an empty catalog' do
-      catalog = ProductCatalog.new
+      catalog = create(:product_catalog)
       expect(catalog).to be_a(ProductCatalog)
     end
 
     it 'accepts a list of products' do
-      catalog = ProductCatalog.new([green_tea, strawberries])
+      catalog = create(:product_catalog, :with_multiple_products)
       expect(catalog).to be_a(ProductCatalog)
     end
   end
 
   describe '#find' do
-    let(:catalog) { ProductCatalog.new([green_tea, strawberries, coffee]) }
+    let(:catalog) { create(:product_catalog, products: [green_tea, strawberries, coffee]) }
 
     it 'finds product by code' do
       product = catalog.find('GR1')
@@ -34,7 +34,7 @@ RSpec.describe ProductCatalog do
   end
 
   describe '#add' do
-    let(:catalog) { ProductCatalog.new }
+    let(:catalog) { create(:product_catalog) }
 
     it 'adds product to catalog' do
       catalog.add(green_tea)
