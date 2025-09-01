@@ -16,7 +16,9 @@ RSpec.describe Cart do
   describe '#total' do
     it 'calculates total of all items' do
       cart.add(product)
-      expect(cart.total).to eq(3.11)
+      total = cart.total
+      expect(total).to be_a(Money)
+      expect(total.amount).to eq(3.11)
     end
   end
 
@@ -66,7 +68,9 @@ RSpec.describe Cart do
       rule_engine.add_rule(mock_rule)
       cart_with_rules.add(green_tea)
 
-      expect(cart_with_rules.total).to eq(2.11)
+      total = cart_with_rules.total
+      expect(total).to be_a(Money)
+      expect(total.amount).to eq(2.11)
     end
   end
 end
