@@ -1,12 +1,13 @@
 require_relative 'money'
 
 class Product
-  attr_reader :code, :name, :price
+  attr_reader :code, :name, :price, :units
 
-  def initialize(code:, name:, price:, currency: 'GBP')
+  def initialize(code:, name:, price:, currency: 'GBP', units:)
     @code = code
     @name = name
     @price = price.is_a?(Money) ? price : Money.new(amount: price, currency: currency)
+    @units = units
   end
 
   def ==(other)
