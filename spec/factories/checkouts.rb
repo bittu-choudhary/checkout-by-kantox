@@ -6,9 +6,10 @@ FactoryBot.define do
       currency_converter { nil }
       base_currency { 'GBP' }
       inventory { Inventory.new }
+      metrics_collector { MetricsCollector.new }
     end
 
-    initialize_with { new(pricing_rules: pricing_rules, catalog: catalog, currency_converter: currency_converter, base_currency: base_currency, inventory: inventory) }
+    initialize_with { new(pricing_rules: pricing_rules, catalog: catalog, currency_converter: currency_converter, base_currency: base_currency, inventory: inventory, metrics_collector: metrics_collector) }
     to_create { |instance| instance }
 
     trait :with_catalog do

@@ -12,7 +12,13 @@ class RuleEngine
 
     @rules.each do |rule|
       if rule.applicable?(cart_items)
-        total_discount += rule.apply(cart_items)
+        discount = rule.apply(cart_items)
+        total_discount += discount
+
+        # Record rule application for metrics if discount was applied
+        if discount > 0 && defined?(GlobalMetrics)
+          GlobalMetrics.record_rule_application(rule.class.name, discount)
+        end
       end
     end
 
