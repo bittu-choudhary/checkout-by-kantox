@@ -162,4 +162,105 @@ RSpec.describe Inventory do
       end
     end
   end
+
+  describe '#release' do
+    let(:cart_id) { 'cart_123' }
+
+    before do
+      inventory.add_product('GR1', units: 10)
+      inventory.reserve('GR1', 3, cart_id)
+    end
+
+    context 'successful releases' do
+      it 'releases reserved stock back to available' do
+        inventory.release('GR1', 2, cart_id)
+
+        expect(inventory.stock_level('GR1')[:available]).to eq(9)
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(1)
+      end
+
+      it 'releases all reserved stock for a product' do
+        inventory.release('GR1', 3, cart_id)
+
+        expect(inventory.stock_level('GR1')[:available]).to eq(10)
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      end
+
+      it 'handles partial releases correctly' do
+        inventory.reserve('GR1', 2, cart_id) # Total: 5 reserved
+        inventory.release('GR1', 1, cart_id)  # Release 1, leaving 4
+
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(4)
+        expect(inventory.stock_level('GR1')[:available]).to eq(6)
+      end
+
+      it 'handles releases across multiple products' do
+        inventory.add_product('SR1', units: 5)
+        inventory.reserve('SR1', 2, cart_id)
+
+        inventory.release('GR1', 1, cart_id)
+        inventory.release('SR1', 1, cart_id)
+
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(2)
+        expect(inventory.stock_level('SR1')[:reserved]).to eq(1)
+      end
+    end
+
+    context 'edge case releases' do
+      it 'handles releasing more than reserved gracefully' do
+        inventory.release('GR1', 5, cart_id)
+
+        expect(inventory.stock_level('GR1')[:available]).to eq(10)
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      end
+
+      it 'handles releases for non-existent reservations' do
+        result = inventory.release('SR1', 1, cart_id)
+
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(3) # unchanged
+      end
+
+      it 'handles releases for unknown carts' do
+        result = inventory.release('GR1', 1, 'unknown_cart')
+
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(3) # unchanged
+      end
+
+      it 'handles zero quantity releases' do
+        result = inventory.release('GR1', 0, cart_id)
+
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(3) # unchanged
+      end
+
+      it 'handles negative quantity releases' do
+        result = inventory.release('GR1', -1, cart_id)
+
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(3) # unchanged
+      end
+    end
+
+    context 'reservation cleanup' do
+      it 'cleans up empty product reservations' do
+        inventory.release('GR1', 3, cart_id)
+
+        # Should not cause errors on subsequent operations
+        result = inventory.release('GR1', 1, cart_id)
+        expect(result).to be true
+      end
+
+      it 'maintains other cart reservations when releasing' do
+        other_cart = 'cart_456'
+        inventory.reserve('GR1', 2, other_cart)
+
+        inventory.release('GR1', 3, cart_id)
+
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(2)
+        expect(inventory.stock_level('GR1')[:available]).to eq(8)
+      end
+    end
+  end
 end
