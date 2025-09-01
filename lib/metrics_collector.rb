@@ -66,26 +66,8 @@ class MetricsCollector
     }
   end
 
-  def get_detailed_report
-    get_summary_report.merge({
-      hourly_breakdown: @metrics[:hourly_stats].dup,
-      daily_breakdown: @metrics[:daily_stats].dup,
-      all_product_stats: @metrics[:product_popularity].dup,
-      all_rule_stats: @metrics[:rule_applications].dup,
-      recent_errors: (@error_log || []).last(10)
-    })
-  end
-
   def reset_metrics
     initialize
-  end
-
-  def current_error_rate(window_seconds = 300)
-    recent_errors = count_recent_errors(window_seconds)
-    recent_operations = count_recent_operations(window_seconds)
-
-    return 0.0 if recent_operations == 0
-    (recent_errors.to_f / recent_operations * 100).round(2)
   end
 
   private
@@ -158,19 +140,6 @@ class MetricsCollector
       error_types: @metrics[:error_counts].dup,
       error_rate: (100.0 - calculate_success_rate).round(2)
     }
-  end
-
-  def count_recent_operations(window_seconds)
-    # Count operations in the last window_seconds
-    # This is a simplified implementation - in production you'd want more sophisticated time windowing
-    @metrics[:checkout_operations]
-  end
-
-  def count_recent_errors(window_seconds)
-    return 0 unless @error_log
-
-    cutoff_time = Time.now - window_seconds
-    @error_log.count { |error| error[:timestamp] > cutoff_time }
   end
 end
 
