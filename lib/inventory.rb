@@ -12,6 +12,10 @@ class Inventory
     }
   end
 
+  def has_product?(product_code)
+    @products.key?(product_code)
+  end
+
   def stock_level(product_code)
     product = @products[product_code] || { total_units: 0, reserved_units: 0, sold_units: 0 }
     {
