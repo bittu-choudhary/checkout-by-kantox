@@ -41,4 +41,24 @@ class Inventory
 
     true
   end
+
+  def release(product_code, quantity, cart_id)
+    return true if quantity <= 0
+    return true unless @products.key?(product_code)
+    return true unless @reservations.key?(cart_id)
+    return true unless @reservations[cart_id].key?(product_code)
+
+    reserved_for_cart = @reservations[cart_id][product_code]
+    release_amount = [quantity, reserved_for_cart].min
+
+    @products[product_code][:reserved_units] -= release_amount
+    @reservations[cart_id][product_code] -= release_amount
+
+    if @reservations[cart_id][product_code] == 0
+      @reservations[cart_id].delete(product_code)
+      @reservations.delete(cart_id) if @reservations[cart_id].empty?
+    end
+
+    true
+  end
 end
