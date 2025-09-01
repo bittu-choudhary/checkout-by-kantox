@@ -3,9 +3,11 @@ FactoryBot.define do
     transient do
       pricing_rules { [] }
       catalog { nil }
+      currency_converter { nil }
+      base_currency { 'GBP' }
     end
 
-    initialize_with { new(pricing_rules: pricing_rules, catalog: catalog) }
+    initialize_with { new(pricing_rules: pricing_rules, catalog: catalog, currency_converter: currency_converter, base_currency: base_currency) }
     to_create { |instance| instance }
 
     trait :with_catalog do
