@@ -1,11 +1,17 @@
+require_relative 'insufficient_stock_error'
+
 class Cart
   attr_accessor :items
+  attr_reader :cart_id, :inventory
 
-  def initialize(rule_engine: nil, currency_converter: nil, base_currency: 'GBP')
+
+  def initialize(rule_engine: nil, currency_converter: nil, base_currency: 'GBP', inventory:, cart_id:)
     @items = []
     @rule_engine = rule_engine
     @currency_converter = currency_converter
     @base_currency = base_currency
+    @inventory = inventory
+    @cart_id = cart_id
   end
 
   def total
@@ -22,7 +28,28 @@ class Cart
   end
 
   def add(product)
+    if @inventory && product.respond_to?(:code) && @inventory.has_product?(product.code)
+      unless @inventory.available?(product.code, 1)
+        stock = @inventory.stock_level(product.code)
+        raise InsufficientStockError.new(product.code, 1, stock[:available])
+      end
+
+      unless @inventory.reserve(product.code, 1, @cart_id)
+        stock = @inventory.stock_level(product.code)
+        raise InsufficientStockError.new(product.code, 1, stock[:available])
+      end
+    end
     @items << product
+  end
+
+  def remove(product)
+    if @items.include?(product)
+      @items.delete_at(@items.index(product))
+
+      if @inventory && product.respond_to?(:code) && @inventory.has_product?(product.code)
+        @inventory.release(product.code, 1, @cart_id)
+      end
+    end
   end
 
   def items

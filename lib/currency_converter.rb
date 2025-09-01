@@ -24,7 +24,7 @@ class CurrencyConverter
   end
 
   def convert(money, target_currency)
-    return Money.new(amount: money.amount, currency: target_currency) if money.currency == target_currency
+    return money if money.currency == target_currency
 
     rate = get_rate(money.currency, target_currency)
     converted_amount = money.amount * rate
