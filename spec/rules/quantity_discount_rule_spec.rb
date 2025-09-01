@@ -95,4 +95,47 @@ RSpec.describe QuantityDiscountRule do
       end
     end
   end
+
+  describe 'BOGO with odd quantities' do
+    let(:rule) { create(:quantity_discount_rule) }
+
+    context 'with 3 items' do
+      let(:cart_items) { { 'GR1' => [green_tea, green_tea, green_tea] } }
+
+      it 'applies discount for one set only' do
+        discount = rule.apply(cart_items)
+        expect(discount).to eq(3.11)
+      end
+
+      it 'leaves one item at full price' do
+        discount = rule.apply(cart_items)
+        expected_discount = green_tea.price * 1
+        expect(discount).to eq(expected_discount)
+      end
+    end
+
+    context 'with 5 items' do
+      let(:cart_items) { { 'GR1' => Array.new(5, green_tea) } }
+
+      it 'applies discount for two complete sets' do
+        discount = rule.apply(cart_items)
+        expect(discount).to be_within(0.01).of(6.22)
+      end
+
+      it 'leaves one item at full price' do
+        discount = rule.apply(cart_items)
+        expected_discount = green_tea.price * 2
+        expect(discount).to be_within(0.01).of(expected_discount)
+      end
+    end
+
+    context 'with 7 items' do
+      let(:cart_items) { { 'GR1' => Array.new(7, green_tea) } }
+
+      it 'applies discount for three complete sets' do
+        discount = rule.apply(cart_items)
+        expect(discount).to be_within(0.01).of(9.33)
+      end
+    end
+  end
 end
