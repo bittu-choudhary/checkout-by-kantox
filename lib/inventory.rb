@@ -17,6 +17,7 @@ class Inventory
     {
       total: product[:total_units],
       reserved: product[:reserved_units],
+      sold: product[:sold_units],
       available: product[:total_units] - product[:reserved_units] - product[:sold_units]
     }
   end
@@ -59,6 +60,18 @@ class Inventory
       @reservations.delete(cart_id) if @reservations[cart_id].empty?
     end
 
+    true
+  end
+
+  def commit(cart_id)
+    return true unless @reservations[cart_id]
+
+    @reservations[cart_id].each do |product_code, quantity|
+      @products[product_code][:reserved_units] -= quantity
+      @products[product_code][:sold_units] += quantity
+    end
+
+    @reservations.delete(cart_id)
     true
   end
 end
