@@ -47,4 +47,40 @@ RSpec.describe Inventory do
       end
     end
   end
+
+  describe '#available?' do
+    before do
+      inventory.add_product('GR1', units: 10)
+    end
+
+    it 'returns true when sufficient stock available' do
+      expect(inventory.available?('GR1', 5)).to be true
+    end
+
+    it 'returns true when requesting exact available stock' do
+      expect(inventory.available?('GR1', 10)).to be true
+    end
+
+    it 'returns false when insufficient stock' do
+      expect(inventory.available?('GR1', 15)).to be false
+    end
+
+    it 'returns false for unknown product' do
+      expect(inventory.available?('XX1', 1)).to be false
+    end
+
+    it 'returns true when requesting zero quantity' do
+      expect(inventory.available?('GR1', 0)).to be true
+    end
+
+    context 'with edge cases' do
+      it 'handles negative quantity requests' do
+        expect(inventory.available?('GR1', -1)).to be true
+      end
+
+      it 'handles very large quantity requests' do
+        expect(inventory.available?('GR1', 999999)).to be false
+      end
+    end
+  end
 end
