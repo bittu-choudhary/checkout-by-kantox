@@ -20,7 +20,7 @@ class QuantityDiscountRule < BaseRule
     return 0 if quantity < (@buy_quantity + @free_quantity)
 
     sets = quantity / (@buy_quantity + @free_quantity)
-    discount_per_set = items.first.price * @free_quantity
+    discount_per_set = items.first.price.amount * @free_quantity
 
     sets * discount_per_set
   end
