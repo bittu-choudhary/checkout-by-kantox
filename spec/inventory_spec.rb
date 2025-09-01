@@ -263,4 +263,57 @@ RSpec.describe Inventory do
       end
     end
   end
+
+  describe '#commit' do
+    let(:cart_id) { 'cart_123' }
+
+    before do
+      inventory.add_product('GR1', units: 10)
+      inventory.add_product('SR1', units: 5)
+      inventory.reserve('GR1', 3, cart_id)
+      inventory.reserve('SR1', 1, cart_id)
+    end
+
+    it 'commits all reservations for cart to sold units' do
+      inventory.commit(cart_id)
+      expect(inventory.stock_level('GR1')[:sold]).to eq(3)
+      expect(inventory.stock_level('SR1')[:sold]).to eq(1)
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      expect(inventory.stock_level('SR1')[:reserved]).to eq(0)
+    end
+
+    it 'removes all reservations for the cart' do
+      inventory.commit(cart_id)
+
+      # Should be able to reserve again since cart reservations are cleared
+      result = inventory.reserve('GR1', 1, cart_id)
+      expect(result).to be true
+    end
+
+    it 'only commits reservations for specified cart' do
+      other_cart = 'cart_456'
+      inventory.reserve('GR1', 2, other_cart)
+
+      inventory.commit(cart_id)
+
+      expect(inventory.stock_level('GR1')[:sold]).to eq(3)
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(2) # other cart still reserved
+    end
+
+    it 'handles commit for non-existent cart gracefully' do
+      result = inventory.commit('unknown_cart')
+      expect(result).to be true
+
+      # Original reservations should remain
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(3)
+      expect(inventory.stock_level('SR1')[:reserved]).to eq(1)
+    end
+
+    it 'updates available stock correctly after commit' do
+      inventory.commit(cart_id)
+
+      expect(inventory.stock_level('GR1')[:available]).to eq(7) # 10 - 3 sold
+      expect(inventory.stock_level('SR1')[:available]).to eq(4) # 5 - 1 sold
+    end
+  end
 end
