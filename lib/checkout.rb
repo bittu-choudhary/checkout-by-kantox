@@ -4,7 +4,7 @@ class Checkout
   def initialize(pricing_rules:, catalog: nil)
     @pricing_rules = pricing_rules
     @catalog = catalog
-    @cart = Cart.new
+    @cart = Cart.new(rule_engine: pricing_rules)
   end
 
   def scan(item)
