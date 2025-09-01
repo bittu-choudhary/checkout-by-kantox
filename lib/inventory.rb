@@ -28,4 +28,17 @@ class Inventory
     stock = stock_level(product_code)
     stock[:available] >= quantity
   end
+
+  def reserve(product_code, quantity, cart_id)
+    return true if quantity <= 0
+    return false unless available?(product_code, quantity)
+
+    @products[product_code][:reserved_units] += quantity
+
+    @reservations[cart_id] ||= {}
+    @reservations[cart_id][product_code] ||= 0
+    @reservations[cart_id][product_code] += quantity
+
+    true
+  end
 end
