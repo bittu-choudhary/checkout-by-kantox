@@ -74,4 +74,15 @@ class Inventory
     @reservations.delete(cart_id)
     true
   end
+
+  def cancel(cart_id)
+    return true unless @reservations[cart_id]
+
+    @reservations[cart_id].each do |product_code, quantity|
+      @products[product_code][:reserved_units] -= quantity
+    end
+
+    @reservations.delete(cart_id)
+    true
+  end
 end
