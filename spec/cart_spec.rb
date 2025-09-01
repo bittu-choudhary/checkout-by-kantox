@@ -3,7 +3,9 @@ require_relative '../lib/cart'
 require_relative '../lib/product'
 
 RSpec.describe Cart do
-  let(:cart) { Cart.new }
+  let(:inventory) { Inventory.new }
+  let(:cart_id) { SecureRandom.uuid }
+  let(:cart) { Cart.new(inventory: inventory, cart_id: cart_id) }
   let(:product) { create(:product) }
 
   describe '#add' do
@@ -54,7 +56,9 @@ RSpec.describe Cart do
   describe 'rule integration' do
     let(:green_tea) { create(:product) }
     let(:rule_engine) { RuleEngine.new }
-    let(:cart_with_rules) { Cart.new(rule_engine: rule_engine) }
+    let(:inventory) { Inventory.new }
+    let(:cart_id) { SecureRandom.uuid }
+    let(:cart_with_rules) { Cart.new(rule_engine: rule_engine, inventory: inventory, cart_id: cart_id) }
 
     it 'accepts rule engine in constructor' do
       expect(cart_with_rules).to be_a(Cart)
