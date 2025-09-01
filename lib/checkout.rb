@@ -1,5 +1,6 @@
 require_relative 'cart'
 require_relative 'metrics_collector'
+require 'securerandom'
 
 class Checkout
   attr_reader :inventory, :cart_id, :cart
