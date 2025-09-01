@@ -1,9 +1,10 @@
 require_relative 'cart'
+require_relative 'metrics_collector'
 
 class Checkout
   attr_reader :inventory, :cart_id, :cart
 
-  def initialize(pricing_rules:, catalog: nil, currency_converter: nil, base_currency: 'GBP', inventory:)
+  def initialize(pricing_rules:, catalog: nil, currency_converter: nil, base_currency: 'GBP', inventory:, metrics_collector: nil)
     @pricing_rules = pricing_rules
     @catalog = catalog
     @currency_converter = currency_converter
@@ -12,17 +13,43 @@ class Checkout
     @cart_id = SecureRandom.uuid
     @processed = false
     @cancelled = false
+    @metrics_collector = metrics_collector || GlobalMetrics.instance
+    @start_time = Time.now
     @cart = Cart.new(rule_engine: pricing_rules, currency_converter: @currency_converter, base_currency: @base_currency, inventory: @inventory, cart_id: @cart_id)
   end
 
   def scan(item)
-    product = resolve_product(item)
-    @cart.add(product)
+    begin
+      product = resolve_product(item)
+      @cart.add(product)
+    rescue => error
+      @metrics_collector.record_error('scan_error', error.message)
+      raise error
+    end
   end
 
   def total
-    result = @cart.total
-    result.is_a?(Money) ? result.amount : result
+    begin
+      result = @cart.total
+      amount = result.is_a?(Money) ? result.amount : result
+      # Extract products for metrics
+      products = @cart.items.map { |item| item.respond_to?(:code) ? item.code : 'unknown' }
+
+      @metrics_collector.record_checkout({
+        success: true,
+        total_amount: amount,
+        items_count: @cart.items.length,
+        products: products.uniq
+      })
+      amount
+    rescue => error
+      @metrics_collector.record_checkout({
+        success: false,
+        error_type: error.class.name,
+        error_message: error.message
+      })
+      raise error
+    end
   end
 
   def total_money
