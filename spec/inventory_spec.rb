@@ -316,4 +316,57 @@ RSpec.describe Inventory do
       expect(inventory.stock_level('SR1')[:available]).to eq(4) # 5 - 1 sold
     end
   end
+
+  describe '#cancel' do
+    let(:cart_id) { 'cart_123' }
+
+    before do
+      inventory.add_product('GR1', units: 10)
+      inventory.reserve('GR1', 3, cart_id)
+    end
+
+    it 'releases all reservations for cart' do
+      inventory.cancel(cart_id)
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      expect(inventory.stock_level('GR1')[:available]).to eq(10)
+    end
+
+    it 'handles multiple products for same cart' do
+      inventory.add_product('SR1', units: 5)
+      inventory.reserve('SR1', 2, cart_id)
+
+      inventory.cancel(cart_id)
+
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      expect(inventory.stock_level('SR1')[:reserved]).to eq(0)
+      expect(inventory.stock_level('GR1')[:available]).to eq(10)
+      expect(inventory.stock_level('SR1')[:available]).to eq(5)
+    end
+
+    it 'only cancels reservations for specified cart' do
+      other_cart = 'cart_456'
+      inventory.reserve('GR1', 2, other_cart)
+
+      inventory.cancel(cart_id)
+
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(2) # other cart still reserved
+      expect(inventory.stock_level('GR1')[:available]).to eq(8) # 10 - 2 reserved by other cart
+    end
+
+    it 'handles cancel for non-existent cart gracefully' do
+      result = inventory.cancel('unknown_cart')
+      expect(result).to be true
+
+      # Original reservations should remain
+      expect(inventory.stock_level('GR1')[:reserved]).to eq(3)
+    end
+
+    it 'cleans up empty cart entries after cancel' do
+      inventory.cancel(cart_id)
+
+      # Should be able to reserve again since cart was cleaned up
+      result = inventory.reserve('GR1', 1, cart_id)
+      expect(result).to be true
+    end
+  end
 end
