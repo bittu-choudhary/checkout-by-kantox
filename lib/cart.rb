@@ -8,7 +8,7 @@ class Cart
 
   def total
     subtotal = @items.sum(&:price)
-    discount = @rule_engine ? @rule_engine.apply_rules(grouped_items) : 0
+    discount = @rule_engine && @rule_engine.respond_to?(:apply_rules) ? @rule_engine.apply_rules(grouped_items) : 0
     [subtotal - discount, 0].max
   end
 
