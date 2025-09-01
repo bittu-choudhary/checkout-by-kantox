@@ -83,4 +83,83 @@ RSpec.describe Inventory do
       end
     end
   end
+
+  describe '#reserve' do
+    let(:cart_id) { 'cart_123' }
+
+    before do
+      inventory.add_product('GR1', units: 10)
+    end
+
+    context 'successful reservations' do
+      it 'reserves stock successfully when available' do
+        result = inventory.reserve('GR1', 3, cart_id)
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:available]).to eq(7)
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(3)
+      end
+
+      it 'reserves exact available stock' do
+        result = inventory.reserve('GR1', 10, cart_id)
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:available]).to eq(0)
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(10)
+      end
+
+      it 'handles multiple reservations for same cart' do
+        inventory.reserve('GR1', 2, cart_id)
+        inventory.reserve('GR1', 1, cart_id)
+
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(3)
+        expect(inventory.stock_level('GR1')[:available]).to eq(7)
+      end
+
+      it 'handles reservations from different carts' do
+        cart_id_2 = 'cart_456'
+
+        inventory.reserve('GR1', 3, cart_id)
+        inventory.reserve('GR1', 2, cart_id_2)
+
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(5)
+        expect(inventory.stock_level('GR1')[:available]).to eq(5)
+      end
+    end
+
+    context 'failed reservations' do
+      it 'fails to reserve when insufficient stock' do
+        result = inventory.reserve('GR1', 15, cart_id)
+        expect(result).to be false
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+        expect(inventory.stock_level('GR1')[:available]).to eq(10)
+      end
+
+      it 'fails to reserve unknown product' do
+        result = inventory.reserve('XX1', 1, cart_id)
+        expect(result).to be false
+      end
+
+      it 'fails reservation when stock becomes insufficient due to other reservations' do
+        inventory.reserve('GR1', 8, 'cart_other')
+        result = inventory.reserve('GR1', 5, cart_id)
+
+        expect(result).to be false
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(8)
+        expect(inventory.stock_level('GR1')[:available]).to eq(2)
+      end
+    end
+
+    context 'edge cases' do
+      it 'handles zero quantity reservations' do
+        result = inventory.reserve('GR1', 0, cart_id)
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      end
+
+      it 'handles negative quantity reservations' do
+        result = inventory.reserve('GR1', -1, cart_id)
+        expect(result).to be true
+        expect(inventory.stock_level('GR1')[:reserved]).to eq(0)
+      end
+    end
+  end
 end
