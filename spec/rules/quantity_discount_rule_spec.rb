@@ -77,7 +77,7 @@ RSpec.describe QuantityDiscountRule do
 
       it 'discount equals price of one item' do
         discount = rule.apply(cart_items)
-        expect(discount).to eq(green_tea.price)
+        expect(discount).to eq(green_tea.price.amount)
       end
     end
 
@@ -91,7 +91,7 @@ RSpec.describe QuantityDiscountRule do
 
       it 'discount equals price of two items' do
         discount = rule.apply(cart_items)
-        expect(discount).to be_within(0.01).of(green_tea.price * 2)
+        expect(discount).to be_within(0.01).of(green_tea.price.amount * 2)
       end
     end
   end
@@ -109,7 +109,7 @@ RSpec.describe QuantityDiscountRule do
 
       it 'leaves one item at full price' do
         discount = rule.apply(cart_items)
-        expected_discount = green_tea.price * 1
+        expected_discount = green_tea.price.amount * 1
         expect(discount).to eq(expected_discount)
       end
     end
@@ -124,7 +124,7 @@ RSpec.describe QuantityDiscountRule do
 
       it 'leaves one item at full price' do
         discount = rule.apply(cart_items)
-        expected_discount = green_tea.price * 2
+        expected_discount = green_tea.price.amount * 2
         expect(discount).to be_within(0.01).of(expected_discount)
       end
     end

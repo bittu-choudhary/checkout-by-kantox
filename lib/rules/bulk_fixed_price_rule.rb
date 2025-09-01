@@ -9,7 +9,7 @@ class BulkFixedPriceRule < BulkRuleBase
   protected
 
   def calculate_discount(items, quantity)
-    original_price = items.first.price
+    original_price = items.first.price.amount
     savings_per_item = original_price - @fixed_price
 
     quantity * savings_per_item

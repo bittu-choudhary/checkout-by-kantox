@@ -30,14 +30,14 @@ RSpec.describe Checkout do
 
     it "reflects item price in total" do
       checkout.scan(green_tea)
-      expect(checkout.total).to eq(green_tea.price)
+      expect(checkout.total).to eq(green_tea.price.amount)
     end
 
     context "with multiple items" do
       it "adds different product correctly" do
         checkout.scan(green_tea)
         checkout.scan(strawberries)
-        expect(checkout.total).to eq(green_tea.price + strawberries.price)
+        expect(checkout.total).to eq(green_tea.price.amount + strawberries.price.amount)
       end
     end
 
@@ -45,14 +45,14 @@ RSpec.describe Checkout do
       it "adds same product correctly" do
         checkout.scan(green_tea)
         checkout.scan(green_tea)
-        expect(checkout.total).to eq(green_tea.price * 2)
+        expect(checkout.total).to eq(green_tea.price.amount * 2)
       end
 
       it "handles mixed scanning" do
         checkout.scan(green_tea)
         checkout.scan(strawberries)
         checkout.scan(green_tea)
-        expect(checkout.total).to eq(green_tea.price * 2 + strawberries.price)
+        expect(checkout.total).to eq(green_tea.price.amount * 2 + strawberries.price.amount)
       end
     end
   end
@@ -69,7 +69,7 @@ RSpec.describe Checkout do
         checkout.scan(strawberries)
         checkout.scan(green_tea)
         checkout.scan(coffee)
-        expect(checkout.total).to eq(green_tea.price * 2 + strawberries.price + coffee.price)
+        expect(checkout.total).to eq(green_tea.price.amount * 2 + strawberries.price.amount + coffee.price.amount)
       end
 
       it "handles empty basket" do
@@ -78,16 +78,16 @@ RSpec.describe Checkout do
 
       it "maintains running total as items are scanned" do
         checkout.scan(green_tea)
-        expect(checkout.total).to eq(green_tea.price)
+        expect(checkout.total).to eq(green_tea.price.amount )
 
         checkout.scan(strawberries)
-        expect(checkout.total).to eq(green_tea.price + strawberries.price)
+        expect(checkout.total).to eq(green_tea.price.amount  + strawberries.price.amount )
 
         checkout.scan(green_tea)
-        expect(checkout.total).to eq(green_tea.price * 2 + strawberries.price)
+        expect(checkout.total).to eq(green_tea.price.amount  * 2 + strawberries.price.amount )
 
         checkout.scan(coffee)
-        expect(checkout.total).to eq(green_tea.price * 2 + strawberries.price + coffee.price)
+        expect(checkout.total).to eq(green_tea.price.amount  * 2 + strawberries.price.amount  + coffee.price.amount )
       end
     end
   end

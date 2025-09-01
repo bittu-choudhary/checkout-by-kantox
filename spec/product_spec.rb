@@ -22,7 +22,8 @@ RSpec.describe Product do
     end
 
     it 'returns the product price' do
-      expect(product.price).to eq(3.11)
+      expect(product.price).to be_a(Money)
+      expect(product.price.amount).to eq(3.11)
     end
   end
 

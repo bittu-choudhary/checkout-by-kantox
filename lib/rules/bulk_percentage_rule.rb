@@ -9,7 +9,7 @@ class BulkPercentageRule < BulkRuleBase
   protected
 
   def calculate_discount(items, quantity)
-    original_price = items.first.price
+    original_price = items.first.price.amount
     discount_per_item = original_price * (@discount_percentage / 100.0)
 
     quantity * discount_per_item

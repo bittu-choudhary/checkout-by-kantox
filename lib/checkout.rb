@@ -13,6 +13,11 @@ class Checkout
   end
 
   def total
+    result = @cart.total
+    result.is_a?(Money) ? result.amount : result
+  end
+
+  def total_money
     @cart.total
   end
 
