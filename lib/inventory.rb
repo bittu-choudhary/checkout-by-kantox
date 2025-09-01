@@ -20,4 +20,12 @@ class Inventory
       available: product[:total_units] - product[:reserved_units] - product[:sold_units]
     }
   end
+
+  def available?(product_code, quantity)
+    return false unless @products.key?(product_code)
+    return true if quantity <= 0
+
+    stock = stock_level(product_code)
+    stock[:available] >= quantity
+  end
 end
